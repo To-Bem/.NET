@@ -1,0 +1,115 @@
+@base = http://localhost:5000
+@json = application/json
+@dispId = 11
+@eventoId = 5
+
+
+
+### 00 · Saúde da API (200)
+GET {{base}}/
+
+### ============================== DISPOSITIVOS ================================
+### 01 · DISPOSITIVO — criar (201)
+POST {{base}}/api/dispositivos
+Content-Type: {{json}}
+
+{ "idosoId": 1, "tipo": "LAMPADA", "comodo": "Sala", "status": "OFFLINE" }
+
+### 02 · DISPOSITIVO — listar todos (200)
+GET {{base}}/api/dispositivos
+
+### 03 · DISPOSITIVO — buscar um pelo id (200)
+GET {{base}}/api/dispositivos/{{dispId}}
+
+### 04 · DISPOSITIVO — atualizar (204, sem corpo na resposta)
+PUT {{base}}/api/dispositivos/{{dispId}}
+Content-Type: {{json}}
+
+{ "idosoId": 1, "tipo": "BASE", "comodo": "Quarto" }
+
+### 05 · DISPOSITIVO — conferir a atualização (200, comodo = Quarto)
+GET {{base}}/api/dispositivos/{{dispId}}
+
+### ================================ EVENTOS ===================================
+### 06 · EVENTO — criar movimento (201)
+POST {{base}}/api/eventos
+Content-Type: {{json}}
+
+{ "dispositivoId": {{dispId}}, "tipo": "MOVIMENTO", "valor": 1, "dataHora": "2026-11-12T07:42:10-03:00" }
+
+### 07 · EVENTO — criar heartbeat (201): dispositivo passa a ONLINE
+POST {{base}}/api/eventos
+Content-Type: {{json}}
+
+{ "dispositivoId": {{dispId}}, "tipo": "HEARTBEAT", "valor": 1 }
+
+### 08 · DISPOSITIVO — conferir ONLINE e ultimoHeartbeat preenchido (200)
+GET {{base}}/api/dispositivos/{{dispId}}
+
+### 09 · EVENTO — listar todos (200)
+GET {{base}}/api/eventos
+
+### 10 · EVENTO — filtrar pelo dispositivo (200)
+GET {{base}}/api/eventos?dispositivoId={{dispId}}
+
+### 11 · DISPOSITIVO — listar os eventos dele (200)
+GET {{base}}/api/dispositivos/{{dispId}}/eventos
+
+### 12 · EVENTO — buscar um pelo id (200)
+GET {{base}}/api/eventos/{{eventoId}}
+
+### 13 · EVENTO — atualizar (204, sem corpo na resposta)
+PUT {{base}}/api/eventos/{{eventoId}}
+Content-Type: {{json}}
+
+{ "dispositivoId": {{dispId}}, "tipo": "SEM_PRESENCA", "valor": 0 }
+
+### ======================== ERROS (devem falhar de propósito) ==================
+### 14 · ERRO — dispositivo com tipo inválido (400)
+POST {{base}}/api/dispositivos
+Content-Type: {{json}}
+
+{ "idosoId": 1, "tipo": "TV", "comodo": "Sala" }
+
+### 15 · ERRO — dispositivo sem campos obrigatórios (400)
+POST {{base}}/api/dispositivos
+Content-Type: {{json}}
+
+{ "tipo": "BASE" }
+
+### 16 · ERRO — evento com tipo inválido (400)
+POST {{base}}/api/eventos
+Content-Type: {{json}}
+
+{ "dispositivoId": {{dispId}}, "tipo": "XYZ", "valor": 1 }
+
+### 17 · ERRO — evento de um dispositivo que não existe (400)
+POST {{base}}/api/eventos
+Content-Type: {{json}}
+
+{ "dispositivoId": 9999, "tipo": "MOVIMENTO", "valor": 1 }
+
+### 18 · ERRO — buscar dispositivo que não existe (404)
+GET {{base}}/api/dispositivos/9999
+
+### 19 · ERRO — buscar evento que não existe (404)
+GET {{base}}/api/eventos/9999
+
+### 20 · ERRO — atualizar dispositivo que não existe (404)
+PUT {{base}}/api/dispositivos/9999
+Content-Type: {{json}}
+
+{ "idosoId": 1, "tipo": "BASE", "comodo": "Quarto" }
+
+### ================== REMOVER (faça por último) ================================
+### 21 · EVENTO — remover (204)
+DELETE {{base}}/api/eventos/{{eventoId}}
+
+### 22 · EVENTO — remover de novo (404, já foi apagado)
+DELETE {{base}}/api/eventos/{{eventoId}}
+
+### 23 · DISPOSITIVO — remover (204; apaga os eventos dele em cascata)
+DELETE {{base}}/api/dispositivos/{{dispId}}
+
+### 24 · DISPOSITIVO — conferir que sumiu (404)
+GET {{base}}/api/dispositivos/{{dispId}}
